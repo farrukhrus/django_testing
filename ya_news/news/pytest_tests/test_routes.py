@@ -1,9 +1,8 @@
 from http import HTTPStatus
 
-from django.urls import reverse
 import pytest
+from django.urls import reverse
 from pytest import lazy_fixture
-from pytest_django.asserts import assertRedirects
 
 
 @pytest.mark.parametrize(
