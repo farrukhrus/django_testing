@@ -31,9 +31,10 @@ class TestCreate(TestCase):
         """
         Анонимный пользователь не может создать заметку.
         """
+        init_cnt = Note.objects.count()
         response = self.anon_client.post(self.add_url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertEqual(Note.objects.count(), 0)
+        self.assertEqual(Note.objects.count(), init_cnt)
 
     def test_user_can_create_note(self):
         """
