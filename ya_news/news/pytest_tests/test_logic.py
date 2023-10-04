@@ -10,26 +10,45 @@ from news.forms import BAD_WORDS, WARNING
 
 
 @pytest.mark.parametrize(
-    'parametrized_client, expected_count',
+    'parametrized_client',
     (
-        (lazy_fixture('author_client'), 1),
-        (lazy_fixture('client'), 0),
+        lazy_fixture('client'),
     )
 )
 @pytest.mark.django_db
-def test_add_comment(
+def test_anonymous_cant_add_comment(
     parametrized_client,
-    expected_count,
     news_id,
     form_data,
 ):
     """
     Анонимный пользователь не может отправить комментарий.
+    """
+    url = reverse('news:detail', args=news_id)
+    init_count = Comment.objects.count()
+    parametrized_client.post(url, data=form_data)
+    assert Comment.objects.count() == init_count
+
+
+@pytest.mark.parametrize(
+    'parametrized_client',
+    (
+        lazy_fixture('author_client'),
+    )
+)
+@pytest.mark.django_db
+def test_auth_user_can_add_comment(
+    parametrized_client,
+    news_id,
+    form_data,
+):
+    """
     Авторизованный пользователь может отправить комментарий.
     """
     url = reverse('news:detail', args=news_id)
+    init_count = Comment.objects.count()
     parametrized_client.post(url, data=form_data)
-    assert (Comment.objects.count() == expected_count)
+    assert Comment.objects.count() == init_count + 1
 
 
 def test_no_bad_words(author_client, news_id):
@@ -45,7 +64,7 @@ def test_no_bad_words(author_client, news_id):
         'text',
         WARNING,
     )
-    assert (Comment.objects.count() == 0)
+    assert Comment.objects.count() == 0
 
 
 @pytest.mark.parametrize(
@@ -67,7 +86,7 @@ def test_can_delete_comment(
     url = reverse('news:delete', args=comment_id)
     parametrized_client.post(url)
     comments_count = Comment.objects.count()
-    assert (comments_count == expected_count)
+    assert comments_count == expected_count
 
 
 @pytest.mark.parametrize(
@@ -95,6 +114,6 @@ def test_edit_comment(
     """
     url = reverse('news:edit', args=comment_id)
     response = parametrized_client.post(url, data=form_data)
-    assert (response.status_code == expected_status)
+    assert response.status_code == expected_status
     edited_comment = Comment.objects.get()
-    assert (edited_comment.text == comment_text[expected_text])
+    assert edited_comment.text == comment_text[expected_text]

@@ -40,10 +40,11 @@ class TestCreate(TestCase):
         """
         Залогиненный пользователь может создать заметку.
         """
+        init_count = Note.objects.count()
         response = self.author_client.post(self.add_url, data=self.form_data)
         self.assertRedirects(response, self.SUCCESS_REDIRECT)
         notes_count = Note.objects.count()
-        self.assertEqual(notes_count, 1)
+        self.assertEqual(notes_count, init_count + 1)
         new_note = Note.objects.get()
 
         self.assertEqual(new_note.title, self.form_data['title'])
@@ -107,10 +108,10 @@ class TestEditDelete(TestCase):
         """
         Пользователь может удалять свои заметки
         """
+        init_count = Note.objects.count()
         response = self.author_client.delete(self.delete_url)
         self.assertRedirects(response, self.SUCCESS_REDIRECT)
-        notes_count = Note.objects.count()
-        self.assertEqual(notes_count, 0)
+        self.assertEqual(Note.objects.count(), init_count - 1)
 
     def test_guest_cant_edit_others_note(self):
         """

@@ -50,7 +50,7 @@ def test_availability_to_edit_delete_comment_by_auth_user(
     """
     name = reverse(name, args=news_object)
     response = parametrized_client.get(name)
-    assert (response.status_code == expected_status)
+    assert response.status_code == expected_status
 
 
 @pytest.mark.parametrize(
